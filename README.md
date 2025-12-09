@@ -15,15 +15,19 @@ MinStart 是一个用于 Windows 的轻量级启动辅助工具，用来在开�
 <br>
 支持通过 JSON 配置文件自定义：<br>
 配置文件路径 C:\Users\Public\minstart.json<br>
-1.快捷方式目录 lnk_dir<br>
-2.监控总时长 monitor_seconds<br>
-3.扫描间隔 scan_interval<br>
+<pre>
+    "config_version": CONFIG_VERSION,   #配置文件版本号，用户侧忽略
+    "lnk_dir": r"C:\Users\Public\lnk",  #需要启动的快捷方式列表，该文件夹内所有lnk会同时启动
+    "monitor_seconds": 10,   # 总共监控多久，自行设置文件夹内lnk需要启动多久
+    "scan_interval": 0.5,    # 每隔多少秒扫描一次，越小窗口操作的越快
+    "window_mode": 1   #窗口处理模式，1=最小化窗口，2=关闭窗口
+</pre>
 <br>
 编译为单文件 exe：<br>
 如果希望在没有 Python 环境的机器上使用，可以通过 PyInstaller 打包：<br>
 <br>
 <pre>
-pyinstaller -F -w -i minstart.ico --runtime-tmpdir "C:\Users\Public\tmp" minstart.py</pre>
+pyinstaller -w -i minstart.ico minstart.py</pre>
 <br>
 编译完成后将可执行程序放入系统启动文件夹即可：<br>
 <pre>C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup</pre>
