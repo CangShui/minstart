@@ -19,8 +19,14 @@ MinStart 是一个用于 Windows 的轻量级启动辅助工具，用来在开�
 2.监控总时长 monitor_seconds<br>
 3.扫描间隔 scan_interval<br>
 <br>
-编译为单文件 exe（可选）：<br>
+编译为单文件 exe：<br>
 如果希望在没有 Python 环境的机器上使用，可以通过 PyInstaller 打包：<br>
 <br>
 <pre>
-pyinstaller -F -w -i minstart.ico --runtime-tmpdir "C:\Users\Public\tmp" minstart.py</pre></p>
+pyinstaller -F -w -i minstart.ico --runtime-tmpdir "C:\Users\Public\tmp" minstart.py</pre>
+<br>
+编译完成后将可执行程序放入系统启动文件夹即可：<br>
+<pre>C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup</pre>
+
+</p>
+
