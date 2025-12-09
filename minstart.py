@@ -10,13 +10,14 @@ import json
 
 # ---------------- 配置部分 ----------------
 CONFIG_PATH = r"C:\Users\Public\minstart.json"
-CONFIG_VERSION = "1.0.0.3"
+CONFIG_VERSION = "1.0.0.4"  # 配置文件版本号
 
 DEFAULT_CONFIG = {
     "config_version": CONFIG_VERSION,
     "lnk_dir": r"C:\Users\Public\lnk",
     "monitor_seconds": 10,   # 总共监控多久
-    "scan_interval": 0.5,      # 每隔多少秒扫描一次
+    "scan_interval": 0.5,    # 每隔多少秒扫描一次
+    "window_mode": 1   #窗口处理模式，1=最小化，2=关闭
 }
 
 def compare_versions(v1, v2):
@@ -56,6 +57,7 @@ CONFIG = load_config()
 LNK_DIR = CONFIG.get("lnk_dir", r"C:\Users\Public\lnk")
 MONITOR_SECONDS = CONFIG.get("monitor_seconds", 60)
 SCAN_INTERVAL = CONFIG.get("scan_interval", 1)
+WINDOW_MODE = int(CONFIG.get("window_mode", 1))  # 1=最小化, 2=关闭
 # ---------------- 配置部分结束 ----------------
 
 
@@ -90,7 +92,7 @@ def build_target_processes_from_lnks():
             print(f" - {lnk} -> 无法解析目标（可能是特殊类型快捷方式）")
 
     if not target_processes:
-        print("没有解析出任何 exe，后续将不会最小化任何窗口。")
+        print("没有解析出任何 exe，后续将不会处理任何窗口。")
 
     return target_processes, lnk_files
 
@@ -118,6 +120,27 @@ def minimize_windows_of_pid(pid):
             pass
     return hit
 
+def close_windows_of_pid(pid):
+    """尝试关闭该进程的窗口（发送 WM_CLOSE）"""
+    hwnds = get_hwnds_by_pid(pid)
+    hit = False
+    for hwnd in hwnds:
+        try:
+            win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+            hit = True
+        except Exception:
+            pass
+    return hit
+
+def handle_process_windows(pid, name):
+    """根据 WINDOW_MODE 决定对窗口做什么"""
+    if WINDOW_MODE == 2:
+        if close_windows_of_pid(pid):
+            print(f"已尝试关闭 {name} (PID={pid}) 的窗口")
+    else:
+        if minimize_windows_of_pid(pid):
+            print(f"已尝试最小化 {name} (PID={pid}) 的窗口")
+
 def launch_all_shortcuts(lnk_files):
     print("并发启动以下快捷方式：")
     for lnk in lnk_files:
@@ -127,12 +150,13 @@ def launch_all_shortcuts(lnk_files):
         except Exception as e:
             print(f"启动失败 {lnk}: {e}")
 
-def monitor_and_minimize_by_targets(target_processes):
+def monitor_and_handle_by_targets(target_processes):
     if not target_processes:
         print("TARGET_PROCESSES 为空，跳过监控。")
         return
 
-    print(f"开始监控以下进程的窗口并最小化（持续 {MONITOR_SECONDS} 秒，间隔 {SCAN_INTERVAL} 秒）：")
+    mode_str = "关闭" if WINDOW_MODE == 2 else "最小化"
+    print(f"开始监控以下进程的窗口并{mode_str}（持续 {MONITOR_SECONDS} 秒，间隔 {SCAN_INTERVAL} 秒）：")
     for name in target_processes:
         print(" -", name)
 
@@ -147,8 +171,8 @@ def monitor_and_minimize_by_targets(target_processes):
             if name not in target_processes:
                 continue
 
-            if minimize_windows_of_pid(pid):
-                print(f"已尝试最小化 {name} (PID={pid}) 的窗口")
+            handle_process_windows(pid, name)
+
         time.sleep(SCAN_INTERVAL)
 
     print("监控结束。")
@@ -159,7 +183,7 @@ def main():
         return
 
     launch_all_shortcuts(lnk_files)
-    monitor_and_minimize_by_targets(target_processes)
+    monitor_and_handle_by_targets(target_processes)
 
 if __name__ == "__main__":
     main()
