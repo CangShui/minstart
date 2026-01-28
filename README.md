@@ -30,7 +30,7 @@ MinStart 是一个用于 Windows 的轻量级启动辅助工具，用来在开�
 pyinstaller -w -i minstart.ico minstart.py</pre>
 或者使用mingw64编译
 <pre>
-python -m nuitka --standalone --onefile --mingw64 --remove-output .\netcat.py</pre>
+python -m nuitka --standalone --onefile --mingw64 --remove-output .\minstart.py</pre>
 <br>
 编译完成后将可执行程序放入系统启动文件夹即可：<br>
 <pre>C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup</pre>
